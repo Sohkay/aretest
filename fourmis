@@ -1,0 +1,170 @@
+from random import *
+from tkinter import *
+
+taille = 200
+fen = Tk()
+canvas = Canvas(fen, width=2*taille, height=2*taille, background="black")
+
+def generer_tab(taille):
+    tab = []
+    for y in range(taille):
+        tab.append([])
+        for j in range(taille):
+            tab[y].append(0)
+    return tab
+
+#forme des obstacles à changer
+def generer_troue(tab, x0, y0, dist):
+    taille = len(tab)
+
+    forme = randint(0,1)
+
+    for x in range(taille):
+        for y in range(taille):
+
+            if forme == 0: #cercle
+                if (x-x0)**2 + (y-y0)**2 <= dist**2:
+                    tab[x][y] = -1
+            
+            if forme == 1: #carré
+                if max(abs(x-x0), abs(y-y0)) <= dist:
+                    tab[x][y] = -1
+    return tab
+
+"""
+def generer_troue_2(tab, x0, y0, dist, proba):
+    taille = len(tab)
+
+    if dist < taille/20:
+        return tab
+
+    for x in range(taille):
+        for y in range(taille):
+            if max(abs(x-x0), abs(y-y0)) <= dist:
+                tab[x][y] = -1
+
+    for 
+
+    hasard = randint(1,100)
+
+    if hasard <= proba:
+        ndist = dist-randint(1,dist)
+        generer_troue_2(tab, x, y, ndist, proba)
+    
+    return tab
+"""
+    
+def generer_plan(tab):
+    taille = len(tab)
+    tab_cases = []
+
+    for y in range(taille):
+        tab_cases.append([])
+        for x in range(taille):
+            if tab[y][x] >= 0:
+                case = canvas.create_rectangle(2*x+1+2,2*y+1+2,2*x+2+2,2*y+2+2, outline = "white")
+                tab_cases[y].append(case)
+            else:
+                case = canvas.create_rectangle(2*x+1+2,2*y+1+2,2*x+2+2,2*y+2+2, outline = "black")
+                tab_cases[y].append(case)
+    return tab_cases
+
+#canvas.itemconfig(tab_cases[0][0], outline = "red")
+
+def deplacement():
+    global x, y, probH, probG, probDir
+    global tab, tab_cases
+    aleatoireDir = randint(1,100)
+    aleatoireSens = randint(1,100)
+
+    if aleatoireDir <= probDir:
+        if y == 0:
+            if tab[x][y+1] != -1:
+                y += 1
+                probH = max(modifProb, probH-modifProb)
+                probDir = min(100-modifProb, probDir+modifProb)
+        elif y == taille - 1:
+            if tab[x][y-1] != -1:
+                y -= 1
+                probH = min(100-modifProb, probH+modifProb)
+                ProbDir = min(100-modifProb, probDir+modifProb)
+        else:
+            if aleatoireSens <= probH:
+                if tab[x][y-1] != -1:
+                    y -= 1
+                    probH = min(100-modifProb, probH+modifProb)
+            else:
+                if tab[x][y+1] != -1:
+                    y += 1
+                    probH = max(modifProb, probH-modifProb)
+            probDir = min(100-modifProb, probDir+modifProb)
+    
+    else:
+        if x == 0:
+            if tab[x+1][y] != -1:
+                x += 1
+                probG = max(modifProb, probG-modifProb)
+                probDir = max(modifProb, probDir-modifProb)
+        elif x == taille - 1:
+            if tab[x-1][y] != -1:
+                x -= 1
+                probG = min(100-modifProb, probG+modifProb)
+                probDir = max(modifProb, probDir-modifProb)
+        else:
+            if aleatoireSens <= probG:
+                if tab[x-1][y] != -1:
+                    x -= 1
+                    probG = min(100-modifProb, probG+modifProb)
+            else:
+                if tab[x+1][y] != -1:
+                    x += 1
+                    probG = max(modifProb, probG-modifProb)
+            probDir = max(modifProb, probDir-modifProb)
+    
+    tab[x][y] = 1
+    canvas.itemconfig(tab_cases[x][y], outline = "red")
+
+"""
+def update_couleurs():
+    for y in range(taille):
+        for x in range(taille):
+            if tab[x][y] == 0:
+                canvas.itemconfig(tab_cases[x][y], outline = "white")
+            elif tab[x][y] == 1:
+                canvas.itemconfig(tab_cases[x][y], outline = "red")
+            else:
+                canvas.itemconfig(tab_cases[x][y], outline = "black")
+"""
+                
+tab = generer_tab(taille)
+
+
+for i in range(20):
+    x = randint(0,taille-1)
+    y = randint(0,taille-1)
+    dist = randint(5,15)
+    tab = generer_troue(tab, x, y, dist)
+
+"""
+suite = Button(fen, text ="suite", command = deplacement)
+suite.pack()
+"""
+
+tab_cases = generer_plan(tab)
+
+x = 0
+y = 0
+probH = 50
+probG = 50
+probDir = 50
+modifProb = 10
+
+for i in range(5000): 
+    deplacement()
+    print(probH, probG, probDir)
+
+canvas.itemconfig(tab_cases[0][0], outline = "green")
+canvas.itemconfig(tab_cases[199][199], outline = "blue")
+
+canvas.pack()
+fen.mainloop()
